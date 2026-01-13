@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>快递柜取件码管理系统</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>快递柜取件码管理系统</h1>
+        </header>
+
+        <div class="settings-section">
+            <h2>快递柜设置</h2>
+            <div class="settings-content">
+                <div class="settings-form">
+                    <input type="text" id="lockerName" placeholder="快递柜名称（如：丰巢）">
+                    <input type="number" id="freeHours" placeholder="免费时长（小时）" min="1">
+                    <button onclick="addLockerSetting()">添加设置</button>
+                </div>
+                <div class="settings-list" id="settingsList"></div>
+            </div>
+        </div>
+
+        <div class="import-section">
+            <h2>数据导入</h2>
+            <textarea id="importData" placeholder="请粘贴快递信息，例如：
+1月5日 18:43
+【丰巢】凭取件码22570871至西枣林村东门丰巢柜取件，18小时内免费。有疑问联系快递员"></textarea>
+            <div class="import-buttons">
+                <button onclick="importData()">导入数据</button>
+                <button onclick="clearAllData()">清空所有数据</button>
+            </div>
+        </div>
+
+        <div class="display-section">
+            <h2>快递信息</h2>
+            <div id="lockerGroups"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
