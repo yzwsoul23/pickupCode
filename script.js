@@ -33,6 +33,16 @@ function saveToStorage() {
     localStorage.setItem('packages', JSON.stringify(packages));
 }
 
+function openSettings() {
+    const modal = document.getElementById('settingsModal');
+    modal.classList.add('show');
+}
+
+function closeSettings() {
+    const modal = document.getElementById('settingsModal');
+    modal.classList.remove('show');
+}
+
 function addLockerSetting() {
     const nameInput = document.getElementById('lockerName');
     const hoursInput = document.getElementById('freeHours');
@@ -90,6 +100,7 @@ function parsePackageData(text) {
         if (!line) continue;
         
         const timeMatch = line.match(/(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{1,2})/);
+        const timeOnlyMatch = line.match(/(\d{1,2}):(\d{1,2})/);
         const lockerMatch = line.match(/【(.+?)】/);
         const codeMatch = line.match(/取件码(\d+)/);
         const hoursMatch = line.match(/(\d+)小时/);
@@ -108,6 +119,23 @@ function parsePackageData(text) {
             currentPackage = {
                 id: Date.now() + Math.random(),
                 date: new Date(currentYear, month - 1, day, hour, minute),
+                lockerName: '',
+                code: '',
+                freeHours: 0,
+                originalText: line
+            };
+        } else if (timeOnlyMatch) {
+            if (currentPackage) {
+                parsedPackages.push(currentPackage);
+            }
+            
+            const now = new Date();
+            const hour = parseInt(timeOnlyMatch[1]);
+            const minute = parseInt(timeOnlyMatch[2]);
+            
+            currentPackage = {
+                id: Date.now() + Math.random(),
+                date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute),
                 lockerName: '',
                 code: '',
                 freeHours: 0,
@@ -260,27 +288,20 @@ function renderPackages() {
                         <span class="package-code">${pkg.code}</span>
                         <span class="package-time">${formatTime(timeInfo.storedTime)}</span>
                     </div>
-                    <div class="package-details">
-                        <div class="detail-item">
-                            <span class="detail-label">存放时长</span>
-                            <span class="detail-value">${formatDuration(timeInfo.storedHours)}</span>
+                    <div class="package-status">
+                        <div class="status-info">
+                            <div class="status-item">
+                                <span class="status-label">${timeInfo.isOverdue ? '已超时' : '剩余'}</span>
+                                <span class="status-value ${timeInfo.isOverdue ? 'overdue-time' : (timeInfo.remainingHours < 2 ? 'warning-time' : '')}">
+                                    ${formatDuration(timeInfo.remainingHours)}
+                                </span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-value">${timeInfo.isOverdue ? '⚠️ 已超时' : (timeInfo.remainingHours < 2 ? '⏰ 即将超时' : '✅ 正常')}</span>
+                            </div>
                         </div>
-                        <div class="detail-item">
-                            <span class="detail-label">免费时长</span>
-                            <span class="detail-value">${timeInfo.freeHours}小时</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">${timeInfo.isOverdue ? '已超时' : '剩余时间'}</span>
-                            <span class="detail-value ${timeInfo.isOverdue ? 'overdue-time' : (timeInfo.remainingHours < 2 ? 'warning-time' : '')}">
-                                ${timeInfo.isOverdue ? formatDuration(timeInfo.remainingHours) : formatDuration(timeInfo.remainingHours)}
-                            </span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">状态</span>
-                            <span class="detail-value">${timeInfo.isOverdue ? '⚠️ 已超时' : (timeInfo.remainingHours < 2 ? '⏰ 即将超时' : '✅ 正常')}</span>
-                        </div>
+                        <button class="delete-btn" onclick="deletePackage(${pkg.id})">删除</button>
                     </div>
-                    <button onclick="deletePackage(${pkg.id})" style="margin-top: 10px; padding: 6px 12px; background: #ff4757; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">删除</button>
                 </div>
             `;
         });
