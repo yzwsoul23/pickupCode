@@ -237,9 +237,11 @@ function clearAllData() {
     }
 }
 
-function deletePackage(id) {
-    if (confirm('确定要删除这条快递信息吗？')) {
-        packages = packages.filter(p => p.id !== id);
+function markAsPicked(id) {
+    const pkg = packages.find(p => p.id === id);
+    if (pkg) {
+        pkg.picked = true;
+        pkg.pickedTime = new Date();
         saveToStorage();
         renderPackages();
     }
@@ -280,7 +282,8 @@ function renderPackages() {
         
         lockerPackages.forEach(pkg => {
             const timeInfo = calculateTimeInfo(pkg);
-            const statusClass = timeInfo.isOverdue ? 'overdue' : (timeInfo.remainingHours < 2 ? 'warning' : '');
+            const isPicked = pkg.picked;
+            const statusClass = isPicked ? 'picked' : (timeInfo.isOverdue ? 'overdue' : (timeInfo.remainingHours < 2 ? 'warning' : ''));
             
             headerHtml += `
                 <div class="package-item ${statusClass}">
@@ -291,16 +294,16 @@ function renderPackages() {
                     <div class="package-status">
                         <div class="status-info">
                             <div class="status-item">
-                                <span class="status-label">${timeInfo.isOverdue ? '已超时' : '剩余'}</span>
-                                <span class="status-value ${timeInfo.isOverdue ? 'overdue-time' : (timeInfo.remainingHours < 2 ? 'warning-time' : '')}">
-                                    ${formatDuration(timeInfo.remainingHours)}
+                                <span class="status-label">${isPicked ? '已取' : (timeInfo.isOverdue ? '已超时' : '剩余')}</span>
+                                <span class="status-value ${isPicked ? 'picked-time' : (timeInfo.isOverdue ? 'overdue-time' : (timeInfo.remainingHours < 2 ? 'warning-time' : ''))}">
+                                    ${isPicked ? (pkg.pickedTime ? formatTime(pkg.pickedTime) : '已取件') : formatDuration(timeInfo.remainingHours)}
                                 </span>
                             </div>
                             <div class="status-item">
-                                <span class="status-value">${timeInfo.isOverdue ? '⚠️ 已超时' : (timeInfo.remainingHours < 2 ? '⏰ 即将超时' : '✅ 正常')}</span>
+                                <span class="status-value">${isPicked ? '✅ 已取件' : (timeInfo.isOverdue ? '⚠️ 已超时' : (timeInfo.remainingHours < 2 ? '⏰ 即将超时' : '✅ 正常'))}</span>
                             </div>
                         </div>
-                        <button class="delete-btn" onclick="deletePackage(${pkg.id})">删除</button>
+                        <button class="delete-btn ${isPicked ? 'picked-btn' : ''}" onclick="markAsPicked(${pkg.id})" ${isPicked ? 'disabled' : ''}>${isPicked ? '已取' : '标记已取'}</button>
                     </div>
                 </div>
             `;
