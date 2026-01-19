@@ -25,6 +25,12 @@ function loadFromStorage() {
     
     if (savedPackages) {
         packages = JSON.parse(savedPackages);
+        packages = packages.map(pkg => ({
+            ...pkg,
+            date: new Date(pkg.date),
+            picked: pkg.picked || false,
+            pickedTime: pkg.pickedTime ? new Date(pkg.pickedTime) : null
+        }));
     }
 }
 
@@ -122,6 +128,8 @@ function parsePackageData(text) {
                 lockerName: '',
                 code: '',
                 freeHours: 0,
+                picked: false,
+                pickedTime: null,
                 originalText: line
             };
         } else if (timeOnlyMatch) {
@@ -139,6 +147,8 @@ function parsePackageData(text) {
                 lockerName: '',
                 code: '',
                 freeHours: 0,
+                picked: false,
+                pickedTime: null,
                 originalText: line
             };
         }
@@ -282,7 +292,7 @@ function renderPackages() {
         
         lockerPackages.forEach(pkg => {
             const timeInfo = calculateTimeInfo(pkg);
-            const isPicked = pkg.picked;
+            const isPicked = pkg.picked || false;
             const statusClass = isPicked ? 'picked' : (timeInfo.isOverdue ? 'overdue' : (timeInfo.remainingHours < 2 ? 'warning' : ''));
             
             headerHtml += `
